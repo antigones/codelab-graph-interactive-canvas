@@ -1,0 +1,26 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2019-12-15T20:19:27Z",
+  "id": "ok-google-let-s-draw-a-graph",
+  "duration": 27,
+  "title": "Ok Google, let's draw a graph!",
+  "authors": "Juna Salviati",
+  "summary": "In this codelab you will discover how to use Interactive Canvas to compose a graph with you voice.",
+  "source": "1ZNkKQh7ijG5aeawjQ0bkQDGrXI7KpLB8IleHcuH9lCg",
+  "theme": "google-assistant",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "Google Assistant"
+  ],
+  "tags": [
+    "gdgrome-2019"
+  ],
+  "feedback": "https://github.com/antigones/codelab-graph-interactive-canvas/issues",
+  "ga": "UA-154552232-1",
+  "url": "ok-google-let-s-draw-a-graph"
+}

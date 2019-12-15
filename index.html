@@ -1,0 +1,318 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Ok Google, let&#39;s draw a graph!</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="UA-154552232-1"
+                  id="ok-google-let-s-draw-a-graph"
+                  title="Ok Google, let&#39;s draw a graph!"
+                  environment="web"
+                  feedback-link="https://github.com/antigones/codelab-graph-interactive-canvas/issues">
+    
+      <google-codelab-step label="Introduction" duration="2">
+        <p><strong>Last Updated:</strong> 2019-12-12</p>
+<p>Interactive Canvas allows the developers to incorporate a web app in an Action for Google Assistant.</p>
+<p>This is awesome, since now developer are not limited by a standard set of interfaces anymore, they can define their own content in a new, more engaging and interactive way!</p>
+<p>This tutorial is about using Interactive Canvas API to make an Interactive Canvas Action to draw graphs using your voice.</p>
+<h2 is-upgraded><strong>What you&#39;ll build</strong></h2>
+<p>In this codelab, you are going to implement an Interactive Canvas Action. Your project will:</p>
+<ul>
+<li>Recognize if the user wants to add a node or an edge.</li>
+<li>Use Interactive Canvas to show a web app</li>
+<li>Push commands and parameters to the web app using HTMLResponse</li>
+<li>Receive commands from the web app</li>
+</ul>
+<h2 class="checklist" is-upgraded><strong>What you&#39;ll learn</strong></h2>
+<ul class="checklist">
+<li>How to develop intents</li>
+<li>How to develop entities</li>
+<li>How to use Interactive Canvas to interact with the web app</li>
+<li>How to use Interactive Canvas API to enable interaction from the web app</li>
+<li>How to use Cytoscape.js to add nodes and edges to a canvas</li>
+</ul>
+<p>Code blocks are glossed over and are provided for you to simply copy and paste.</p>
+<h2 is-upgraded><strong>What you&#39;ll need</strong></h2>
+<ul>
+<li>Chrome Web Browser</li>
+<li>A Google Account</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Getting set up" duration="5">
+        <h2 is-upgraded><strong>Get the code</strong></h2>
+<p>We&#39;ve put everything you need for this project into a Git repo. To get started, you&#39;ll need to grab the code and open it in your favorite dev environment. For this codelab, we recommend using Git.</p>
+<h3 is-upgraded><strong>Strongly Recommended: Use Git</strong></h3>
+<p>Using Git is the recommended method for working through this codelab.</p>
+<ol type="1" start="1">
+<li>Open a new browser tab and go to <a href="https://git-scm.com/" target="_blank">https://git-scm.com/</a>.</li>
+<li>Download and install Git.</li>
+<li>Open the console<strong>.</strong></li>
+<li>Git clone <strong>https://github.com/antigones/GraphInteractiveCanvas.git</strong>.</li>
+</ol>
+<h3 is-upgraded><strong>Alternative: Download code </strong></h3>
+<p><a href="https://github.com/antigones/GraphInteractiveCanvas/archive/master.zip" target="_blank"><paper-button class="colored" raised><iron-icon icon="cloud_download"></iron-icon>Download source code</paper-button></a></p>
+<h2 is-upgraded>Install Firebase CLI</h2>
+<p>The Firebase CLI allows you to both deploy your Actions project to Cloud Functions and host your web app.</p>
+<p><strong>Note:</strong> To install the CLI you need to have installed <a href="https://www.npmjs.com/" target="_blank">npm</a>,which typically comes with <a href="https://nodejs.org/en/" target="_blank">Node.js</a>.</p>
+<p>To install or upgrade the CLI, run the following npm command:</p>
+<p><code>npm -g install firebase-tools</code></p>
+<aside class="special"><p><strong>Tip: </strong>Doesn&#39;t work? You may need to <a href="https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally" target="_blank">change npm permissions</a>.</p>
+</aside>
+<p>To verify that the CLI has been installed correctly, open a terminal and run the following command:</p>
+<p><code>firebase --version</code></p>
+<p>Make sure the version of the Firebase CLI is above 3.5.0 so that it has all the latest features required for Cloud Functions. If not, run npm install -g firebase-tools to upgrade the CLI, as shown above.</p>
+<p>To log into Firebase, run the following command:</p>
+<p><code>firebase login</code></p>
+<p>When you log in to Firebase, make sure that you use the same Google account that you will use to create your Actions project.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Develop the Action" duration="5">
+        <p>You will develop a small Action for Assistant embedding a web application which uses cytoscape.js to compose graph using your voice.</p>
+<p><strong>Cytoscape.js</strong> is a javascript library which allows developers to easily manage graphs, offering methods to add or remove nodes and edges and some basic functions to calculate some graphs metrics.</p>
+<h2 is-upgraded><strong>Create AoG project and Dialogflow agent</strong></h2>
+<p>Next, you&#39;ll need to set up an Actions on Google project and configure a Dialogflow agent for this tutorial. To create your Actions on Google project, follow these steps:</p>
+<ol type="1" start="1">
+<li>Open the <a href="https://console.actions.google.com/u/0/" target="_blank">Actions console</a> with <a href="https://www.google.com/chrome/" target="_blank">Chrome</a>. If you&#39;re not already signed in, sign in with the same Google account you used to log into Firebase.</li>
+<li>Click <strong>New project.</strong></li>
+<li>Type in a name for your project. This name is for your own internal reference; later on, you can set an external name for your project.</li>
+<li>Click <strong>Create project.</strong></li>
+<li>Click the <strong>Games &amp; fun</strong> card.</li>
+<li>Click the <strong>Conversational</strong> card.</li>
+<li>Click <strong>Deploy</strong> in the top navigation.</li>
+<li>At the bottom of the page, check the <strong>Yes</strong> option under <strong>Do your Actions use Interactive Canvas?<br></strong><img style="width: 308.00px" src="img\b2a88f9cda7f0579.png"></li>
+<li>At the top of the page, click <strong>Save.</strong></li>
+</ol>
+<aside class="special"><p><strong>Tip: </strong>Take note of the project ID.</p>
+</aside>
+<p>To set up your Dialogflow agent and associate it with your Actions on Google project, follow these steps:</p>
+<ol type="1" start="1">
+<li>Click <strong>Overview</strong> in the top navigation.</li>
+<li>Click the drop-down arrow next to <strong>Build your Action.</strong> Then, click <strong>Add Action(s).</strong></li>
+<li>Click <strong>Add your first action.</strong></li>
+<li>Under <strong>Built-in intents</strong>, select <strong>Play game</strong> and click <strong>Get started in Dialogflow</strong>.</li>
+<li>On the page titled <strong>Create an Agent,</strong> enter a name for your agent.</li>
+<li>Click <strong>Create Agent.</strong></li>
+<li>A page loads with the text <strong>Your Dialogflow agent has been created.</strong> On this page, click <strong>Go To Agent.</strong></li>
+<li>Click the gear icon in the left navigation (Note: ignore the warning about not saving)</li>
+<li>Click <strong>Export and Import</strong>.</li>
+<li>Click <strong>Restore From Zip</strong>.</li>
+<li>Upload the <a href="https://github.com/antigones/GraphInteractiveCanvas/blob/master/GraphInteractiveCanvasAgent.zip" target="_blank">GraphInteractiveCanvasAgent.zip</a> file from the root directory.</li>
+<li>Type &#34;RESTORE&#34; and click <strong>Restore</strong>.</li>
+<li>Click <strong>Done.</strong></li>
+</ol>
+<aside class="warning"><p><strong>Warning</strong>: in the Fulfillment section of the Action, replace PROJECT_ID with the actual project id.</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Develop the Web App" duration="5">
+        <p>The web app will uses cytoscape.js to draw the graph.</p>
+<p><a href="https://js.cytoscape.org/" target="_blank">Cytoscape.js</a> is a javascript library which allows developers to easily manage graphs, offering methods to add or remove nodes and edges and some basic functions to calculate some graphs metrics.</p>
+<p>The web app is made up of three files:</p>
+<ul>
+<li><strong>index.html</strong> contains the interface for the web app. This file loads the Interactive Canvas JavaScript library (enabling <a href="https://developers.google.com/assistant/interactivecanvas/build/web-app#communication" target="_blank">communication</a> between your web app and your conversational Action) and two other files: action.js and main.js.</li>
+<li><strong>main.js</strong> defines the object to interact with  and instantiate a new &#34;Action&#34; object.</li>
+<li><strong>action.js</strong> registers the callbacks for the interaction with Assistant Action.</li>
+</ul>
+<h3 is-upgraded><a href="https://github.com/antigones/GraphInteractiveCanvas/blob/master/public/index.html" target="_blank">index.html</a></h3>
+<pre><code>&lt;!doctype html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+
+&lt;head&gt;
+        &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1&#34;&gt;
+        &lt;meta charset=&#34;UTF-8&#34; /&gt;
+        &lt;title&gt;Graph with Interactive Canvas&lt;/title&gt;
+        &lt;script src=&#34;https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.5.1/cytoscape.min.js&#34;&gt;&lt;/script&gt;
+        &lt;script src=&#34;https://unpkg.com/webcola/WebCola/cola.min.js&#34;&gt;&lt;/script&gt;
+        &lt;script src=&#34;https://cdn.jsdelivr.net/npm/cytoscape-cola@2.3.0/cytoscape-cola.min.js&#34;&gt;&lt;/script&gt;
+        &lt;link href=&#34;https://fonts.googleapis.com/css?family=Lobster&#34; rel=&#34;stylesheet&#34;&gt;
+        &lt;link href=&#34;https://fonts.googleapis.com/css?family=Cabin&#34; rel=&#34;stylesheet&#34;&gt;
+
+          &lt;!-- Disable favicon requests --&gt;
+          &lt;link rel=&#34;shortcut icon&#34; type=&#34;image/x-icon&#34; href=&#34;data:image/x-icon;,&#34;&gt;
+
+          &lt;!-- Load Assistant Interactive Canvas API --&gt;
+          &lt;script type=&#34;text/javascript&#34; src=&#34;https://www.gstatic.com/assistant/interactivecanvas/api/interactive_canvas.min.js&#34;&gt;&lt;/script&gt;
+
+          &lt;style type=&#34;text/css&#34;&gt;
+                        body {
+                                font-family: &#39;Cabin&#39;, cursive;
+                        }
+                        
+                        h1 {
+                                font-family: &#39;Lobster&#39;, cursive;
+                        }
+
+                        #cy {
+                                width: 95%;
+                                height: 95%;
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                z-index: 999;
+                        }
+
+                        h1 {
+                                opacity: 0.5;
+                                font-size: 1em;
+                        }
+          &lt;/style&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+        &lt;div id=&#34;cy&#34;&gt;
+        &lt;/div&gt;
+        &lt;script type=&#34;text/javascript&#34; src=&#34;./action.js&#34;&gt;&lt;/script&gt;
+         &lt;script type=&#34;text/javascript&#34; src=&#34;./main.js&#34;&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<h3 is-upgraded><a href="https://github.com/antigones/GraphInteractiveCanvas/blob/master/public/main.js" target="_blank">main.js</a></h3>
+<pre><code>window.onload = () =&gt; {
+        var cy = cytoscape({
+        container: document.getElementById(&#39;cy&#39;), // container to render in
+        layout: {
+                name: &#39;cola&#39;
+                },
+                style: [
+                        {
+                                selector: &#39;node&#39;,
+                                css: {
+                                        &#39;background-color&#39;: &#39;#f92411&#39;,
+                                         &#39;label&#39;: &#39;data(label)&#39;
+                                }
+                        },
+                        {
+                                selector: &#39;edge&#39;,
+                                css: {
+                                        &#39;line-color&#39;: &#39;#f92411&#39;,
+                                        &#39;label&#39;: &#39;data(label)&#39;
+                                        }
+                        }
+                        ],
+        });
+        this.cy = cy;
+        this.action = new Action(this);
+            // Call setCallbacks to register assistant action callbacks.
+            this.action.setCallbacks();
+          window.focus();
+};</code></pre>
+<h3 is-upgraded><a href="https://github.com/antigones/GraphInteractiveCanvas/blob/master/public/action.js" target="_blank">action.js</a></h3>
+<pre><code>class Action {
+
+        constructor(graphContext) {
+                this.canvas = window.interactiveCanvas;
+                const that = this;
+                this.graphContext = graphContext;
+                this.commands = {
+                        ADDOBJECT: function(data) {
+                                that.addNode(data.label);
+                        },
+                        ADDEDGE: function(data) {
+                                that.addEdge(data.from, data.to, data.label);
+                        },
+                        DEFAULT: function() {
+                                // do nothing, when no command is found
+                        },
+                };
+        }
+
+  /**
+   * Register all callbacks used by Google Assistant Action
+   * executed during creation time.
+   */
+  setCallbacks() {
+
+    const that = this;
+    // declare assistant canvas action callbacks
+    const callbacks = {
+            onUpdate(data) {
+                    that.commands[data.command ? data.command.toUpperCase() : &#39;DEFAULT&#39;](data);
+            },
+    };
+    // called by the Interactive Canvas web app once web app has loaded to
+    // register callbacks
+    this.canvas.ready(callbacks);
+  }
+ 
+  addNode(label) {
+          this.graphContext.cy.add({
+                  group: &#39;nodes&#39;,
+                  data: { id:label, label: label, weight: 10}
+          });
+        this.graphContext.cy.fit();
+        this.canvas.sendTextQuery(`Node added`);
+  }
+  
+   addEdge(from, to, label) {
+           this.graphContext.cy.add({
+                   group: &#39;edges&#39;, data: { id: from+&#34;_&#34;+to, source: from, target: to, label: label }
+           });
+           this.canvas.sendTextQuery(`Edge added`);
+   }
+}
+</code></pre>
+<p>You can deploy the app on any hosting (Github too!). In this codelab we will deploy the web app to Firebase Hosting:</p>
+<p>To deploy just type:</p>
+<p><code>firebase deploy</code></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Test the Action" duration="10">
+        <p>To test the Action, click on the test link, in the right part of the DialogFlow Console:<img style="width: 304.00px" src="img\e799359d13472419.png"></p>
+<p>And select &#34;Talk to &lt;Action Name&gt;&#34; to begin the test.</p>
+<p>When you are prompted for command, type &#34;add node Alice&#34;:</p>
+<p class="image-container"><img style="width: 342.67px" src="img\ec9901f91bebd7f9.png"></p>
+<p>Pressing &#34;Enter&#34; you will see the node on the display!</p>
+<p class="image-container"><img style="width: 624.00px" src="img\3f5d36aecbbf451.png"></p>
+<p>Now type &#34;add node Bob&#34;:</p>
+<p class="image-container"><img style="width: 353.33px" src="img\a26978a687287989.png"></p>
+<p>The node is added to the interface:</p>
+<p class="image-container"><img style="width: 624.00px" src="img\6823ca6d30d67dba.png"></p>
+<p>If you type: &#34;Alice is friend of Bob&#34;...an edge is added!</p>
+<p class="image-container"><img style="width: 349.33px" src="img\645bd2d8fa516543.png"></p>
+<p class="image-container"><img style="width: 624.00px" src="img\9ae69f0415c8d801.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Congratulations" duration="0">
+        <p>Congratulations, you&#39;ve successfully built your first Action with Interactive Canvas! </p>
+<p>You created the Interactive Canvas Action, developed the web app and tested the Action in the emulator.</p>
+<p>You now know the key steps required to develop an Interactive Canvas Action.</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>
